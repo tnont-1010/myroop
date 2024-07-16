@@ -69,11 +69,15 @@ def enhance_face(target_face: Face, temp_frame: Frame) -> Frame:
     temp_face = temp_frame[start_y:end_y, start_x:end_x]
     if temp_face.size:
         with THREAD_SEMAPHORE:
-            _, _, temp_face = get_face_enhancer().enhance(
+            _, _, restored_img = get_face_enhancer().enhance(
                 temp_face,
                 paste_back=True
             )
-        temp_frame[start_y:end_y, start_x:end_x] = temp_face
+        # 修正された画像を取得
+        enhance_ratio = 0.7
+        restored_img = restored_img * enhance_ratio + temp_face * (1 - enhance_ratio)
+        restored_img = restored_img.astype(np.uint8)
+        temp_frame[start_y:end_y, start_x:end_x] = restored_img
     return temp_frame
 
 
